@@ -61,10 +61,10 @@ and reify_neutral = function
   | NVar x        -> Var x
   | NApp (n,v)    -> App (reify_neutral n, reify_value v)
 
-(* Convenience: normalise an expression in the empty environment *)
+(* Normalize an expression in the empty environment *)
 let normalize e = reify_value (eval [] e)
 
-(* --- Demo ----------------------------------------------------------------*)
+(* --- Examples ----------------------------------------------------------------*)
 
 (* Church numerals*)
 let church_zero =

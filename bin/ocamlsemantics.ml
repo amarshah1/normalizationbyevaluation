@@ -1,7 +1,5 @@
 (*
-  Normalization‑by‑Evaluation (NbE) in OCaml
-  ------------------------------------------
-  Variant  : Using actual lambda expressions in OCaml for semantics
+  Normalization‑by‑Evaluation (NbE) in OCaml using actual lambda expressions in OCaml for semantics
 *)
 
 (* --- Syntax ------------------------------------------------------------- *)
@@ -49,10 +47,9 @@ let rec eval (e : env) = function
 let counter = ref 0
 let fresh () = incr counter; "x" ^ string_of_int !counter
 
-
-let rec reflect (e : expr) = function
+let rec lengthen (e : expr) = function
   | Arrow (a, b) -> 
-    let lambda s = reflect (App (e, reify a s)) b in
+    let lambda s = lengthen (App (e, reify a s)) b in
     LAM lambda
   | Base _ -> EXPR e
 
@@ -60,16 +57,16 @@ and reify (t : ty) (s : sem) =
   begin match (t, s) with 
     | (Arrow (a, b), LAM l) ->
         let x = fresh () in 
-        Lam (x, reify b (l (reflect (Var x) a)))
+        Lam (x, reify b (l (lengthen (Var x) a)))
     | (Base _, EXPR t) -> t
     end
 
 (* Normalise an expression in the empty environment *)
 let normalize ty e = reify ty (eval [] e)
 
-(* --- Demo ----------------------------------------------------------------*)
+(* --- Examples ----------------------------------------------------------------*)
 
-(* Church numerals, just to show the machinery works                     *)
+(* Church numerals *)
 let church_zero =
   Lam ("s",
     Lam ("z", Var "z"))
