@@ -1,14 +1,9 @@
 (executable
- (public_name final)
- (name main)
+ (public_name closures)
+ (name closures)
  (libraries final))
 
  (executable
- (public_name realsemantics)
- (name realsemantics)
- (libraries final))
-
- (executable
- (public_name main_typed)
- (name main_typed)
+ (public_name ocamlsemantics)
+ (name ocamlsemantics)
  (libraries final))
