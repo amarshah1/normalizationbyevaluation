@@ -1,0 +1,14 @@
+(executable
+ (public_name final)
+ (name main)
+ (libraries final))
+
+ (executable
+ (public_name realsemantics)
+ (name realsemantics)
+ (libraries final))
+
+ (executable
+ (public_name main_typed)
+ (name main_typed)
+ (libraries final))

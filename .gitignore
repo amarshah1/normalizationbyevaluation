@@ -1,0 +1,6 @@
+_build/
+_opam/
+_tests/
+_tools/
+_vendor/
+_vscode/
