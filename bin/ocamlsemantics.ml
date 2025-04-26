@@ -1,7 +1,7 @@
 (*
   Normalization‑by‑Evaluation (NbE) in OCaml
   ------------------------------------------
-  Variant  : Using actual lambda expressions in OCaml for semantics (see Wikipedia: https://en.wikipedia.org/wiki/Normalisation_by_evaluation#Outline)
+  Variant  : Using actual lambda expressions in OCaml for semantics
 *)
 
 (* --- Syntax ------------------------------------------------------------- *)
@@ -25,7 +25,7 @@ let rec pp = function
 
 type sem = 
   | LAM of (sem -> sem)
-  | SYN of (expr)
+  | EXPR of (expr)
 
 type env = (string * sem) list
 
@@ -54,19 +54,17 @@ let rec reflect (e : expr) = function
   | Arrow (a, b) -> 
     let lambda s = reflect (App (e, reify a s)) b in
     LAM lambda
-  | Base _ -> SYN e
+  | Base _ -> EXPR e
 
 and reify (t : ty) (s : sem) = 
   begin match (t, s) with 
     | (Arrow (a, b), LAM l) ->
         let x = fresh () in 
         Lam (x, reify b (l (reflect (Var x) a)))
-    | (Base _, SYN t) -> t
+    | (Base _, EXPR t) -> t
     end
 
-        
-
-(* Convenience: normalise an expression in the empty environment *)
+(* Normalise an expression in the empty environment *)
 let normalize ty e = reify ty (eval [] e)
 
 (* --- Demo ----------------------------------------------------------------*)
@@ -83,27 +81,27 @@ let church_succ =
         App (Var "s",
              App (App (Var "n", Var "s"), Var "z")))))
 
+(* skk normalization example *)
 let k = Lam ("x", Lam ("y", Var "x"))
 let s = Lam ("x", Lam ("y", Lam ("z", App (App (Var "x", Var "z"), App (Var "y", Var "z")))))
 let skk = App (App (s, k), k)
 
+(*Example from Runming to test why we don't need DeBruijn indices*)
 let runming_example = Lam ("x", App (Lam ("y", Lam ("x", Var "y")), Var "x"))
 
 let runming_example_no_lam = App (Lam ("y", Lam ("x", Var "y")), Var "x")
 
+(* Example for eta expansion*)
 let eta_example = Lam ("f", Var "f")
 
 let eta_example_no_lam = Lam ("x", App (Var "f", Var "x"))
 
 
-let church_two =
-  App (church_succ, App (church_succ, church_zero))
-
-
-
-
 let () =
+  (* change the example to test different terms *)
+
   (* let n = normalize (Arrow (Arrow (Base 0, Base 0), Arrow (Base 0, Base 0))) skk in *)
+  (* let n = normalize (Arrow (Base 0, Base 0)) skk in *)
   (* let n = normalize (Arrow (Base 0, Arrow (Base 1, Base 0))) runming_example in *)
   (* let n = normalize (Arrow (Base 0, Arrow (Base 1, Base 0))) runming_example in *)
   (* let n = normalize (Arrow (Base 1, Base 0)) runming_example_no_lam in *)

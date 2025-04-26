@@ -1,21 +1,16 @@
 (*
-  Normalization‑by‑Evaluation (NbE) in OCaml
-  ------------------------------------------
-  Variant  : Intensional residualizing semantics with read‑back
-             (“Choice {1,1}” in W. J. Bowman's tutorial).
+  Normalization‑by‑Evaluation (NbE) in OCaml using closures
 *)
 
 (* --- Syntax ------------------------------------------------------------- *)
 
 type expr =
-  (* | Base of int                    constants – you can swap in any type *)
   | Var  of string
   | Lam  of string * expr
   | App  of expr * expr
 
 (* Pretty‑printer (α‑renamed variables print nicely) *)
 let rec pp = function
-  (* | Base n        -> string_of_int n *)
   | Var  x        -> x
   | Lam (x,e)     -> Printf.sprintf "(λ%s. %s)" x (pp e)
   | App (e1,e2)   -> Printf.sprintf "(%s %s)" (pp e1) (pp e2)
@@ -28,18 +23,13 @@ type neutral =
   | NApp of neutral * value        (* target is neutral, argument any value *)
 
 and value =
-  (* | VBase of int *)
   | VClosure of env * string * expr   (* λ‑closures carry their env *)
   | VNeutral of neutral
 
-(* todo : write a print function for value*)
-
-
 and env = (string * value) list
 
-(* Lookup with fallback to neutral variable (residualising) *)
+(* Lookup *)
 let rec lookup x = function
-  (* | [] -> VNeutral (NVar x) *)
   | (y,v)::rest -> if x = y then v else lookup x rest
 
 (* --- Evaluation --------------------------------------------------------- *)
@@ -60,7 +50,6 @@ let counter = ref 0
 let fresh () = incr counter; "x" ^ string_of_int !counter
 
 let rec reify_value = function
-  (* | VBase n          -> Base n *)
   | VNeutral neu     -> reify_neutral neu
   | VClosure _ as v  ->
       let x = fresh () in
@@ -89,19 +78,23 @@ let church_succ =
         App (Var "s",
              App (App (Var "n", Var "s"), Var "z")))))
 
-             
+let church_two =
+App (church_succ, App (church_succ, church_zero))
+
+(* skk normalization example *)
 let k = Lam ("x", Lam ("y", Var "x"))
 let s = Lam ("x", Lam ("y", Lam ("z", App (App (Var "x", Var "z"), App (Var "y", Var "z")))))
 let skk = App (App (s, k), k)
 
+(*Example from Runming to test why we don't need DeBruijn indices*)
 let runming_example = Lam ("x", App (Lam ("y", Lam ("x", Var "y")), Var "x"))
 
+(*An example from *)
 let eta_example = Lam ("f", Lam ("x", App (Var "f", Var "x")))
 
-let church_two =
-  App (church_succ, App (church_succ, church_zero))
-
 let () =
-  let n = normalize eta_example in
-  Printf.printf "Original:\n  %s\n%!" (pp eta_example);
+  (* change the example to test different terms *)
+  let example = eta_example in
+  let n = normalize example in
+  Printf.printf "Original:\n  %s\n%!" (pp example);
   Printf.printf "β‑normal form:\n  %s\n%!" (pp n)
